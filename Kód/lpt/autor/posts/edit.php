@@ -4,28 +4,38 @@ require(ROOT_PATH . "/app/database/db.php");
 if($_SESSION['role']=='autor') {
 if (($post['user_id'] == $_SESSION['id']) || ($post['user_id'] == $_SESSION['delete_id'])) {
 	
-// initializing variables
-$p_id = "";
-$user_id = "";
-$autor_clanku = "";
-$title = "";
-$document = "";
-$image = "";
-$published = "";
+
+$autor_clanku = array(); 
+$email_autora_clanku = array(); 
 $errors = array(); 
+
+
 
 if (isset($_GET['delete_id'])) {
 	$delete_id = $_GET['delete_id'];
+
+	$sql = "select * from posts_assets where id='$delete_id'";
+	$results = mysqli_query($conn,$sql);
+	while ($delete_while_loop = mysqli_fetch_assoc($results)) {
+        unlink(ROOT_PATH . '/assets/documents/' . $delete_while_loop['document']);
+        unlink(ROOT_PATH . '/assets/images/' . $delete_while_loop['image']);
+	}
+	
+	$sql_delete_2 = "DELETE FROM posts_autors WHERE id='$delete_id'";
+	$result_2 = mysqli_query($conn, $sql_delete_2);
+	
+	$sql_delete_3 = "DELETE FROM posts_assets WHERE id='$delete_id'";
+	$result_3 = mysqli_query($conn, $sql_delete_3);
 	
 	$sql_delete = "DELETE FROM posts WHERE id='$delete_id'";
 	$result = mysqli_query($conn, $sql_delete);
 	
-	if($result != null)
+	if(($result && $result_2 && $result_3) != null)
 	{
-		mysqli_close($conn); // Close connection
-		$_SESSION['message'] = "Post deleted successfully";
+		mysqli_close($conn);
+		$_SESSION['message'] = "Článek úspěšně smazán";
 		$_SESSION['type'] = 'success';
-		header('location: ' . BASE_URL . '/autor/posts/index.php');  // redirects to all records page
+		header('location: ' . BASE_URL . '/autor/posts/index.php');
 		exit;
 	}
 	else
@@ -34,34 +44,42 @@ if (isset($_GET['delete_id'])) {
 	}
 }
 
-if(isset($_POST['update-post']) == false) // when not clicked on Update button
+if(isset($_POST['update-post']) == false)
 {
 
-	$id = $_GET['id']; // get id through query string
+	$id = $_GET['id'];
 
-	$qry = mysqli_query($conn,"select * from posts where id='$id'"); // select query
-
-	$data = mysqli_fetch_array($qry); // fetch data
-
+	$qry = mysqli_query($conn,"select * from posts where id='$id'");
+	$data = mysqli_fetch_array($qry);
 	$id = $data['id'];
-	$title = $data['title'];
-	$autor_clanku = $data['autor_clanku'];
-	$published = $data['published'];
+	$status = $data['status'];
+	
+	$qry_3 = mysqli_query($conn,"select * from posts_assets where id='$id' ORDER BY verze DESC LIMIT 0, 1");
+	$data_3 = mysqli_fetch_array($qry_3);
+	$title = $data_3['title'];
+	$verze = $data_3['verze'];
+
+	$qry_2 = mysqli_query($conn,"select * from posts_autors where id='$id' AND verze='$verze'");
+
+	
 }
 
-if(isset($_POST['update-post'])) // when click on Update button
+if(isset($_POST['update-post']))
 {
-	
-	// Taking values from the form data(input)
-	$id = $_GET['id'];
+
+	$id = $_REQUEST['id'];
+	$verze = $_REQUEST['verze'];
+	$status = $_REQUEST['status'];
     $title = $_REQUEST['title'];
     $autor_clanku = $_REQUEST['autor_clanku'];
-	$published = isset($_REQUEST['published']) ? 1 : 0;
+	$email_autora_clanku = $_REQUEST['email_autora_clanku'];
 	$user_id = $_SESSION['id'];
+	$verzeplusone = $verze + 1;
 	
-	if (empty($title)) { array_push($errors, "Title is required"); }
-	if (empty($autor_clanku)) { array_push($errors, "Autor clanku is required"); }
-	if (empty($user_id)) { array_push($errors, "User id is required"); }
+	if (empty($title)) { array_push($errors, "Vyžadován nadpis"); }
+	if (empty($autor_clanku)) { array_push($errors, "Vyžadován autor"); }
+	if (empty($email_autora_clanku)) { array_push($errors, "Vyžadován email autora"); }
+	if (empty($user_id)) { array_push($errors, "Vyžadováno ID autor"); }
 	
 	if (!empty($_FILES['image']['name'])) {
 		$image_name = time() . '_' . $_FILES['image']['name'];
@@ -72,10 +90,10 @@ if(isset($_POST['update-post'])) // when click on Update button
 		if ($result) {
 		   $_POST['image'] = $image_name;
 		} else {
-			array_push($errors, "Failed to upload image");
+			array_push($errors, "Chyba při nahrávání obrázku");
 		}
 	} else {
-	   array_push($errors, "Post image required");
+	   array_push($errors, "Vyžadován obrázek článku");
 	}
 	if (!empty($_FILES['document']['name'])) {
 		$document_name = time() . '_' . $_FILES['document']['name'];
@@ -92,18 +110,31 @@ if(isset($_POST['update-post'])) // when click on Update button
 	   array_push($errors, "Post document required");
 	}
 
-	// Finally, add post if there are no errors in the form	
+
 	if (count($errors) == 0) {
+	    
+	    $sql_post = mysqli_query($conn,"UPDATE posts SET last_changed_at=now() WHERE id='$id'");
+	    
+        for($i=0;$i<count($autor_clanku);$i++)
+        {
+		    $sql_post_2 = mysqli_query($conn,"INSERT INTO posts_autors SET id='$id', autor_clanku='$autor_clanku[$i]', email_autora_clanku='$email_autora_clanku[$i]', verze='$verzeplusone'");
+        }
+        
+		$sql_post_3 = mysqli_query($conn,"INSERT INTO posts_assets SET id='$id', title='$title', image='$image_name', document='$document_name', verze='$verzeplusone'");
 		
-		$sql_post = mysqli_query($conn,"update posts set title='$title', user_id='$user_id', autor_clanku='$autor_clanku', published='$published', image='$image_name', document='$document_name' where id='$id'");
-		
-		if($sql_post != null)
+		if(($sql_post != null) && ($sql_post_2 != null) && ($sql_post_3 != null))
 		{
-			mysqli_close($conn); // Close connection
-			$_SESSION['message'] = "Post updated successfully";
+		 
+		     if($status == 'poslano autorovi na opravu'){
+    	        $sql_update = mysqli_query($conn,"UPDATE posts SET status='opraveno autorem' WHERE id='$id'");
+    	    }	   
+		    
+			mysqli_close($conn);
+			$_SESSION['message'] = "Článek byl úspěšně aktualizován";
 			$_SESSION['type'] = 'success';
-			header('location: ' . BASE_URL . '/autor/posts/index.php');  // redirects to all records page
+			header('location: ' . BASE_URL . '/autor/posts/index.php');
 			exit;
+
 		}
 		else
 		{
@@ -135,59 +166,90 @@ if(isset($_POST['update-post'])) // when click on Update button
         <!-- Admin Styling -->
         <link rel="stylesheet" href="../../assets/css/admin.css">
 
-        <title>Autor Section - Edit Post</title>
+        <title>Autor - Upravit článek</title>
     </head>
 
     <body>
         
-    <?php include(ROOT_PATH . "/app/includes/autorHeader.php"); ?>
+    <?php include(ROOT_PATH . "/app/includes/dashboardHeader.php"); ?>
 
         <!-- Admin Page Wrapper -->
         <div class="admin-wrapper">
 
-        <?php include(ROOT_PATH . "/app/includes/autorSidebar.php"); ?>
+        <?php include(ROOT_PATH . "/app/includes/dashboardSidebar.php"); ?>
 
 
             <!-- Admin Content -->
             <div class="admin-content">
                 <div class="button-group">
-                    <a href="create.php" class="btn btn-big">Add Post</a>
-                    <a href="index.php" class="btn btn-big">Manage Posts</a>
+                    <a href="create.php" class="btn btn-big">Přidat článek</a>
+                    <a href="index.php" class="btn btn-big">Spravovat články</a>
                 </div>
 
 
                 <div class="content">
 
-                    <h2 class="page-title">Edit Post</h2>
+                    <h2 class="page-title">Spravovat článek</h2>
 
                     <?php include(ROOT_PATH . "/app/helpers/formErrors.php"); ?>
 
-                    <form action="edit.php" name="theForm" method="post" enctype="multipart/form-data">
+                    <form action="edit.php" name="theForm" id="theForm" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="id" value="<?php echo $id ?>">
+                        <input type="hidden" name="verze" value="<?php echo $verze ?>">
+                        <input type="hidden" name="status" value="<?php echo $status ?>">
                         <div>
-                            <label>Title</label>
-                            <input type="text" name="title" value="<?php echo $title ?>" class="text-input">
+                            <label>Nadpis</label>
+                            <input type="text" name="title" value="<?php echo $title ?>" class="text-input" required>
                         </div>
-						<div>
-                            <label>Autoři:</label>
-                            <input type="text" name="autor_clanku" value="<?php echo $autor_clanku ?>" class="text-input">
-                        </div>
-                        <div>
-                            <label>Document:</label>
-                            <input type="file" name="document" class="text-input">
-                        </div>
-                        <div>
-                            <label>Image</label>
-                            <input type="file" name="image" class="text-input">
-                        </div>
-						<div>
-                            <?php if (empty($published) && $published == 0): ?>
-                                <input type="checkbox" name="published" hidden>
-                            <?php else: ?>
-                                <input type="checkbox" name="published" checked hidden>
-                            <?php endif; ?>
-                           
+	                    <div>
+							<table id="autori_table" align=center>
+							    
+                                <?php
 
+								    
+								    for ($rowno = 0; $autor = mysqli_fetch_assoc($qry_2); $rowno++) {
+								        
+								    $autorclanku = $autor['autor_clanku'];
+								    $emailautoraclanku = $autor['email_autora_clanku'];
+		
+                                		if ($rowno == 0){
+                                			              
+                                            echo "<tr id='row".$rowno."'>";
+                                			              
+                                            echo "<td><input type='text' name='autor_clanku[]' value='" . $autorclanku . "' placeholder='Jméno autora' required></td>";
+                                			
+                                            echo "<td><input type='text' name='email_autora_clanku[]' value='" . $emailautoraclanku . "' placeholder='Email autora' required></td>";
+                                            
+                                            echo "<td></td></tr>";
+                                		
+                                		} else {
+                                		    
+                                            echo "<tr id='row".$rowno."'>";
+                                			              
+                                            echo "<td><input type='text' name='autor_clanku[]' value='" . $autorclanku . "' placeholder='Jméno autora' required></td>";
+                                			
+                                            echo "<td><input type='text' name='email_autora_clanku[]' value='" . $emailautoraclanku . "' placeholder='Email autora' required></td>";
+                                		
+                                			        
+                                            echo "<td><input type='button' value='Odstranit' onclick=delete_row('row" . $rowno . "')></td></tr>";
+                                		}
+			
+                                    }
+                            		
+									
+							
+							?>		
+
+							</table>
+							<input type="button" onclick="add_row();" value="Přidat autora" required>
+	                    </div>
+                        <div>
+                            <label>Dokument:</label>
+                            <input type="file" name="document" class="text-input" accept=".doc,.docx" required>
+                        </div>
+                        <div>
+                            <label>Obrázek:</label>
+                            <input type="file" name="image" class="text-input" accept=".gif,.jpg,.jpeg,.png" required>
                         </div>
                         <div>
                             <button type="submit" name="update-post" class="btn btn-big">Update Post</button>
@@ -204,18 +266,30 @@ if(isset($_POST['update-post'])) // when click on Update button
 
 
 
-        <!-- JQuery -->
-        <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <!-- JQuery -->		
+		<script src="../../assets/js/jquery.js"></script>
         <!-- Ckeditor -->
         <script
             src="https://cdn.ckeditor.com/ckeditor5/12.2.0/classic/ckeditor.js"></script>
         <!-- Custom Script -->
         <script src="../../assets/js/scripts.js"></script>
 
+		<script type="text/javascript">
+		function add_row()
+		{
+			$rowno=$("#autori_table tr").length;
+			$rowno=$rowno+1;
+			$("#autori_table tr:last").after("<tr id='row"+$rowno+"'><td><input type='text' name='autor_clanku[]' placeholder='Jméno autora'></td><td><input type='text' name='email_autora_clanku[]' placeholder='Email autora'></td><td><input type='button' value='Odstranit' onclick=delete_row('row"+$rowno+"')></td></tr>");
+		}
+		function delete_row(rowno)
+		{
+			$('#'+rowno).remove();
+		}
+		</script>
+		
     </body>
 
 </html>
 
-<?php } else { echo 'Nemáte pravo editovat cizí posty.'; } ?>
+<?php } else { echo 'Nemáte právo editovat cizí posty.'; } ?>
 <?php } else { echo 'Nemáte roli ´´Autor´´.'; } ?>
