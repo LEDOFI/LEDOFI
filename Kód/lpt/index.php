@@ -5,7 +5,7 @@ require(ROOT_PATH . "/app/database/db.php");
 include(ROOT_PATH . '/app/controllers/doc2txt.class.php');
 
 $posts = array();
-$postsTitle = 'Recent Posts';
+$postsTitle = 'Nedávné příspěvky';
 
 ?>
 <!DOCTYPE html>
@@ -52,12 +52,16 @@ $postsTitle = 'Recent Posts';
 		<?php
 		
 			if (isset($_POST['search-term'])) {
-				$postsTitle = "You searched for '" . $_POST['search-term'] . "'";
+				$postsTitle = "Zadali jste '" . $_POST['search-term'] . "'";
 				$posts = $_POST['search-term'];
 				$match = '%' . $posts . '%';
-				$sql = "SELECT p.*, u.username FROM posts AS p JOIN users AS u ON p.user_id=u.id WHERE p.published=1 AND p.title LIKE '$match'";
+				$sql = "SELECT * FROM posts, posts_assets, posts_autors
+							INNER JOIN (SELECT id, MAX(verze) AS MaxVerze FROM posts_autors GROUP BY id) groupedPostsAutors ON posts_autors.id = groupedPostsAutors.id AND posts_autors.verze = groupedPostsAutors.MaxVerze 
+						WHERE posts.id=posts_autors.id AND posts.id=posts_assets.id AND posts_autors.verze=posts_assets.verze AND posts.published='1' AND posts_assets.title LIKE '$match' GROUP BY posts.id ORDER BY posts.last_changed_at DESC";
 			} else {
-				$sql = "SELECT p.*, u.username FROM posts AS p JOIN users AS u ON p.user_id=u.id WHERE p.published=1";
+				$sql = "SELECT * FROM posts, posts_assets, posts_autors
+							INNER JOIN (SELECT id, MAX(verze) AS MaxVerze FROM posts_autors GROUP BY id) groupedPostsAutors ON posts_autors.id = groupedPostsAutors.id AND posts_autors.verze = groupedPostsAutors.MaxVerze 
+						WHERE posts.id=posts_autors.id AND posts.id=posts_assets.id AND posts_autors.verze=posts_assets.verze AND posts.published='1' GROUP BY posts.id ORDER BY posts.last_changed_at DESC";
 				
 			}
 				$results = mysqli_query($conn,$sql);
@@ -94,19 +98,34 @@ $postsTitle = 'Recent Posts';
           <div class="post clearfix">
             <img src="<?php echo BASE_URL . '/assets/images/' . $post['image']; ?>" alt="" class="post-image">
             <div class="post-preview">
-              <h2><a href="single.php?id=<?php echo $post['id']; ?>"><?php echo $post['title']; ?></a></h2>
-              <i class="far fa-user"> <?php echo $post['autor_clanku']; ?></i>
-              &nbsp;
+              <h2><a href="single.php?id=<?php echo $post['id']; ?>"><?php echo substr($post['title'], 0, 50); ?></a></h2>
+              <i class="far fa-user">
+                  <?php
+                  
+                                                         
+                    $postID = $post['id'];
+                    $results_2 = mysqli_query($conn,"SELECT * FROM posts, posts_assets, posts_autors
+							INNER JOIN (SELECT id, MAX(verze) AS MaxVerze FROM posts_autors GROUP BY id) groupedPostsAutors ON posts_autors.id = groupedPostsAutors.id AND posts_autors.verze = groupedPostsAutors.MaxVerze 
+						WHERE posts.id=posts_autors.id AND posts.id=posts_assets.id AND posts_autors.verze=posts_assets.verze AND posts.published='1' AND posts.id=$postID"); // select query
+            			
+                    while ($autor = mysqli_fetch_assoc($results_2)) { echo substr($autor['autor_clanku'], 0, 50) . " "; }
+              ?>
+              </i>
               <i class="far fa-calendar"> <?php echo date('F j, Y', strtotime($post['created_at'])); ?></i>
               <p class="preview-text">
 			  	<?php
 				$docObj = new Doc2Txt(ROOT_PATH . "/assets/documents/" . $post['document']);
 
 				$txt = $docObj->convertToText();
-				echo substr($txt, 0, 150);
+				if (strlen($txt) > 250) {
+				    echo substr($txt, 0, 250) . '...';
+				}
+				else {
+				    echo $txt;
+				}    
 				?>
               </p>
-              <a href="single.php?id=<?php echo $post['id']; ?>" class="btn read-more">Read More</a>
+              <a href="single.php?id=<?php echo $post['id']; ?>" class="btn read-more">Více</a>
             </div>
           </div>    
 		<?php } ?>
@@ -121,7 +140,7 @@ $postsTitle = 'Recent Posts';
         <div class="section search">
           <h2 class="section-title">Vyhledávání</h2>
           <form action="index.php" method="post">
-            <input type="text" name="search-term" class="text-input" placeholder="Search...">
+            <input type="text" name="search-term" class="text-input" placeholder="Vyhledat...">
           </form>
         </div>
 
