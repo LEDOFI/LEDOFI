@@ -26,17 +26,17 @@ if($_SESSION['role']=='autor') {
         <!-- Admin Styling -->
         <link rel="stylesheet" href="../assets/css/admin.css">
 
-        <title>Autor Section - Dashboard</title>
+        <title>Autor - Nástěnka</title>
     </head>
 
     <body>
         
-    <?php include(ROOT_PATH . "/app/includes/autorHeader.php"); ?>
+    <?php include(ROOT_PATH . "/app/includes/dashboardHeader.php"); ?>
 
         <!-- Admin Page Wrapper -->
         <div class="admin-wrapper">
 
-        <?php include(ROOT_PATH . "/app/includes/autorSidebar.php"); ?>
+        <?php include(ROOT_PATH . "/app/includes/dashboardSidebar.php"); ?>
 
 
             <!-- Admin Content -->
@@ -44,11 +44,94 @@ if($_SESSION['role']=='autor') {
 
                 <div class="content">
 
-                    <h2 class="page-title">Dashboard</h2>
-
-                    <?php include(ROOT_PATH . '/app/includes/messages.php'); ?>
-
+                    <?php include(ROOT_PATH . "/app/includes/messages.php"); ?>
                     
+                    <table>
+                        <caption><h2 class="page-title">Nedávná aktivita - Články</h2></caption>
+                        <thead>
+                            <th>Nadpis</th>
+                            <th>Autor</th>
+                            <th colspan="3">Status</th>
+                        </thead>
+                        <tbody>
+							<?php
+								$sessionid = $_SESSION['id'];
+								$sql = "SELECT * FROM posts, posts_assets, posts_autors 
+								            INNER JOIN (SELECT id, MAX(verze) AS MaxVerze FROM posts_autors GROUP BY id) groupedPostsAutors ON posts_autors.id = groupedPostsAutors.id AND posts_autors.verze = groupedPostsAutors.MaxVerze 
+								        WHERE posts.id=posts_autors.id AND posts.id=posts_assets.id AND posts_autors.verze=posts_assets.verze AND posts.user_id='$sessionid'
+								        GROUP BY posts.id
+								        ORDER BY posts.last_changed_at DESC, posts_assets.verze DESC LIMIT 10";
+								$results = mysqli_query($conn,$sql);
+								while ($post = mysqli_fetch_assoc($results)) {
+							?>
+                                <tr>
+                                    <td><?php echo $post['title'] ?></td>
+                                    <td>
+                                        <?php
+                                			$postID = $post['id'];
+                                	        $results_2 = mysqli_query($conn,"SELECT * FROM posts, posts_assets, posts_autors 
+								            INNER JOIN (SELECT id, MAX(verze) AS MaxVerze FROM posts_autors GROUP BY id) groupedPostsAutors ON posts_autors.id = groupedPostsAutors.id AND posts_autors.verze = groupedPostsAutors.MaxVerze 
+								        WHERE posts.id=posts_autors.id AND posts.id=posts_assets.id AND posts_autors.verze=posts_assets.verze AND posts.id=$postID AND posts.user_id='$sessionid'
+								        ORDER BY posts.id DESC, posts_assets.verze DESC"); // select query
+                                			
+                                            while ($autor = mysqli_fetch_assoc($results_2)) {
+                                			
+                                        			echo $autor['autor_clanku'] . " ";
+                                			}
+                                		?>	
+                                    </td>
+                                    <td><?php	if($post['published'] == '1') { 	echo "publikovano";	} else { 	echo $post['status'];	} ?></td>
+                                </tr>
+                            <?php } ?>
+
+                        </tbody>
+                    </table>
+                    
+                    <br><br><br><br>
+                    
+                    <table>
+                        <caption><h2 class="page-title">Nedávná aktivita - Recenze</h2></caption>
+                        <thead>
+                            <th>Nadpis</th>
+                            <th>Verze</th>
+                            <th>Autor recenze</th>
+                            <th>Hodnocení</th>
+                            <th colspan="1">Akce</th>
+                            <!--<th>Status</th>-->
+                        </thead>
+                        <tbody>
+							<?php
+								$sessionid = $_SESSION['id'];
+								$sql = "SELECT * FROM posts, posts_assets, posts_vybrani_recenzenti, posts_recenze 
+										WHERE posts.id=posts_assets.id AND posts.id=posts_vybrani_recenzenti.id AND posts.id=posts_recenze.id AND posts_assets.verze=posts_vybrani_recenzenti.verze AND posts_assets.verze=posts_recenze.verze AND posts_vybrani_recenzenti.recenzent_id=posts_recenze.recenzent_id AND posts.user_id='$sessionid' AND posts_vybrani_recenzenti.zpristupneno_autorovi='1'
+										ORDER BY posts_recenze.created_at DESC, posts.id DESC, posts_assets.verze DESC LIMIT 10";
+								$results = mysqli_query($conn,$sql);
+								while ($post = mysqli_fetch_assoc($results)) {
+							?>
+                                <tr>
+                                    <td><?php echo $post['title'] ?></td>
+									<td><?php echo $post['verze'] ?></td>
+                                    <td>
+                                        <?php
+                                			$postID = $post['id'];
+											$postVERZE = $post['verze'];
+											$recenzent_id = $post['recenzent_id'];
+				
+											$results_3 = mysqli_query($conn," SELECT * FROM users, posts_vybrani_recenzenti WHERE users.id='$recenzent_id' AND posts_vybrani_recenzenti.verze='$postVERZE' AND posts_vybrani_recenzenti.id='$postID' GROUP BY posts_vybrani_recenzenti.id"); // select query
+											while ($recenzent = mysqli_fetch_assoc($results_3)) {
+											
+												echo $recenzent['username'] . " ";
+											}
+                                		?>	
+                                    </td>
+                                    <td><?php echo $post['hodnoceni'] ?></td>
+                                    <td><a href="posts/display_submitted_recenze_single.php?id=<?php echo $post['id']; ?>&verze=<?php echo $post['verze']; ?>&recenzent_id=<?php echo $post['recenzent_id']; ?>" class="display">zobrazit</a></td>
+                                    <!--<td><?php/*	if($post['published'] == '1') { 	echo "publikovano";	} else { 	echo $post['status'];	} */?></td> -->
+                                </tr>
+                            <?php } ?>
+
+                        </tbody>
+                    </table>
 
                 </div>
 
