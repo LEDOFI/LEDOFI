@@ -521,7 +521,7 @@ header .menu-toggle {
 
   header ul {
     width: 100%;
-    background: rgba(255, 0, 0, 0.904);
+    background: #0E94A0;
     max-height: 0px;
     overflow: hidden;
   }
@@ -542,17 +542,17 @@ header .menu-toggle {
 
   header ul li ul li a {
     padding: 10px;
-    background: rgba(255, 0, 0, 0.904);
+    background: #0E94A0;
     color: white;
     padding-left: 50px;
   }
 
   header ul li ul li a:hover {
-    background: rgba(255, 0, 0, 0.904);
+    background: #006669;
   }
 
   header ul li ul li a.logout {
-    color: black;
+    color: red;
   }
 
   header .menu-toggle {
