@@ -33,7 +33,7 @@ if (isset($_GET['delete_id'])) {
 	if(($result && $result_2 && $result_3) != null)
 	{
 		mysqli_close($conn);
-		$_SESSION['message'] = "Článek úspěšně smazán";
+		$_SESSION['message'] = "Článek byl úspěšně smazán";
 		$_SESSION['type'] = 'success';
 		header('location: ' . BASE_URL . '/autor/posts/index.php');
 		exit;
