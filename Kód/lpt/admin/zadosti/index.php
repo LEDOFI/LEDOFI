@@ -3,7 +3,7 @@ session_start();
 require(ROOT_PATH . "/app/database/db.php");
 if($_SESSION['role']=='admin') {
 
-// initializing variables
+
 $errors = array();
 $autors = array();
 
@@ -58,11 +58,11 @@ $autors = array();
 
                     <table>
                         <thead>
-                            <th>SN</th>
-                            <th>Username</th>
+                            <th>SČ</th>
+                            <th>Uživatelské jméno</th>
                             <th>Současná role</th>
                             <th>Žádaná role</th>
-                            <th colspan="2">Action</th>
+                            <th colspan="2">Akce</th>
                         </thead>
                         <tbody>
 							<?php

@@ -6,13 +6,12 @@ if($_SESSION['role']=='admin') {
 ?>
 <?php
 
-// initializing variables
+
 $errors = array(); 
 
-if(isset($_GET['id'])) // when click on Update button
+if(isset($_GET['id']))
 {
 	
-	// Taking values from the form data(input)
 	$id = $_GET['id'];
 	
 	if (empty($id)) { array_push($errors, "id is required"); }
@@ -29,9 +28,9 @@ if(isset($_GET['id'])) // when click on Update button
 		if($edit != null)
 		{
 			mysqli_close($conn); // Close connection
-			$_SESSION['message'] = 'Žádost úspěšně přijata';
+			$_SESSION['message'] = 'Žádost byla úspěšně přijata';
 			$_SESSION['type'] = 'success';
-			header('location: ' . BASE_URL . '/admin/zadosti/index.php');  // redirects to all records page
+			header('location: ' . BASE_URL . '/admin/zadosti/index.php');
 			exit;
 		}
 		else
@@ -41,13 +40,13 @@ if(isset($_GET['id'])) // when click on Update button
 	}		
 }
 
-if(isset($_GET['zamitnout_id'])) // when click on Update button
+if(isset($_GET['zamitnout_id']))
 {
 	
-	// Taking values from the form data(input)
+
 	$id = $_GET['zamitnout_id'];
 	
-	if (empty($id)) { array_push($errors, "id is required"); }
+	if (empty($id)) { array_push($errors, "Vyžadováno ID"); }
 	
 	if (count($errors) == 0) {
 		
@@ -56,9 +55,9 @@ if(isset($_GET['zamitnout_id'])) // when click on Update button
 		if($edit != null)
 		{
 			mysqli_close($conn); // Close connection
-			$_SESSION['message'] = 'Žádost úspěšně zamítnuta';
+			$_SESSION['message'] = 'Žádost byla úspěšně zamítnuta';
 			$_SESSION['type'] = 'success';
-			header('location: ' . BASE_URL . '/admin/zadosti/index.php');  // redirects to all records page
+			header('location: ' . BASE_URL . '/admin/zadosti/index.php'); 
 			exit;
 		}
 		else
