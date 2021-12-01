@@ -26,7 +26,7 @@ if($_SESSION['role']=='admin') {
         <!-- Admin Styling -->
         <link rel="stylesheet" href="../assets/css/admin.css">
 
-        <title>Admin Section - Dashboard</title>
+        <title>Admin - Nástěnka</title>
     </head>
 
     <body>
@@ -44,7 +44,7 @@ if($_SESSION['role']=='admin') {
 
                 <div class="content">
 
-                    <h2 class="page-title">Dashboard</h2>
+                    <h2 class="page-title">Nástěnka</h2>
 
                     <?php include(ROOT_PATH . '/app/includes/messages.php'); ?>
 
