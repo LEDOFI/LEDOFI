@@ -6,7 +6,7 @@ if($_SESSION['role']=='admin') {
 ?>
 <?php
 
-// initializing variables
+
 $id = "";
 $username = "";
 $email = "";
@@ -15,14 +15,14 @@ $passwordConf = "";
 $role = "";
 $errors = array(); 
 
-if(isset($_POST['update-user']) == false) // when not clicked on Update button
+if(isset($_POST['update-user']) == false)
 {
 
-	$id = $_GET['id']; // get id through query string
+	$id = $_GET['id'];
 
-	$qry = mysqli_query($conn,"select * from users where id='$id'"); // select query
+	$qry = mysqli_query($conn,"select * from users where id='$id'");
 
-	$data = mysqli_fetch_array($qry); // fetch data
+	$data = mysqli_fetch_array($qry);
 
 	$id = $data['id'];
 	$username = $data['username'];
@@ -30,10 +30,10 @@ if(isset($_POST['update-user']) == false) // when not clicked on Update button
 	$role = $data['role'];
 }
 
-if(isset($_POST['update-user'])) // when click on Update button
+if(isset($_POST['update-user']))
 {
 	
-	// Taking values from the form data(input)
+
 	$id = $_GET['id'];
     $username = $_REQUEST['username'];
     $email = $_REQUEST['email'];
@@ -41,41 +41,40 @@ if(isset($_POST['update-user'])) // when click on Update button
 	$passwordConf = $_REQUEST['passwordConf'];
 	$role = $_REQUEST['role'];
 	
-	if (empty($username)) { array_push($errors, "Username is required"); }
-	if (empty($email)) { array_push($errors, "Email is required"); }
-	if (empty($password)) { array_push($errors, "Password is required"); }
-	if ($password != $passwordConf) { array_push($errors, "The two passwords do not match"); }
-	if (empty($role)) { array_push($errors, "Role is required"); }
+	if (empty($username)) { array_push($errors, "Je vyžadováno uživatelské jméno"); }
+	if (empty($email)) { array_push($errors, "Je vyžadován email"); }
+	if (empty($password)) { array_push($errors, "Je vyžadováno heslo"); }
+	if ($password != $passwordConf) { array_push($errors, "Hesla se neshodují"); }
+	if (empty($role)) { array_push($errors, "Je vyžadován výběr role"); }
 
-	// first check the database to make sure 
-	// a user does not already exist with the same username and/or email
+
 	$user_check_query = "SELECT * FROM users WHERE username='$username' OR email='$email' EXCEPT SELECT * FROM users WHERE (username='$username' OR email='$email') AND id='$id'";
 	$result = mysqli_query($conn, $user_check_query);
 	$user = mysqli_fetch_assoc($result);
 
-	if ($user) { // if user exists
+	if ($user) { 
 		if ($user['username'] === $username) {
-			array_push($errors, "Username already exists");
+			array_push($errors, "Uživatelské jméno již existuje");
 		}
 
 		if ($user['email'] === $email) {
-			array_push($errors, "email already exists");
+			array_push($errors, "Email již existuje");
 		}
 	}
 
-	// Finally, register user if there are no errors in the form	
+	
 	if (count($errors) == 0) {
 	
-		$password = md5($password);//encrypt the password before saving in the database
+		$password = md5($password);
 		
 		$edit = mysqli_query($conn,"update users set username='$username', email='$email', password='$password', role='$role' where id='$id'");
 		
 		if($edit != null)
 		{
-			mysqli_close($conn); // Close connection
-			$_SESSION['message'] = 'User editted';
+			mysqli_close($conn);
+			$_SESSION['message'] = 'Uživatel byl úspěšně upraven';
 			$_SESSION['type'] = 'success';
-			header('location: ' . BASE_URL . '/admin/users/index.php');  // redirects to all records page
+			header('location: ' . BASE_URL . '/admin/users/index.php');
 			exit;
 		}
 		else
@@ -108,7 +107,7 @@ if(isset($_POST['update-user'])) // when click on Update button
         <!-- Admin Styling -->
         <link rel="stylesheet" href="../../assets/css/admin.css">
 
-        <title>Admin Section - Edit User</title>
+        <title>Admin - Upravit uživatele</title>
     </head>
 
     <body>
@@ -124,21 +123,21 @@ if(isset($_POST['update-user'])) // when click on Update button
             <!-- Admin Content -->
             <div class="admin-content">
                 <div class="button-group">
-                    <a href="create.php" class="btn btn-big">Add User</a>
-                    <a href="index.php" class="btn btn-big">Manage Users</a>
+                    <a href="create.php" class="btn btn-big">Přidat uživatele</a>
+                    <a href="index.php" class="btn btn-big">Spravovat uživatele</a>
                 </div>
 
 
                 <div class="content">
 
-                    <h2 class="page-title">Edit User</h2>
+                    <h2 class="page-title">Upravit uživatele</h2>
 
                     <?php include(ROOT_PATH . "/app/helpers/formErrors.php"); ?>
 
                     <form action="<?php echo 'edit.php?id=' . $_GET['id']; ?>" name="theForm" id="theForm" method="post">
                         <input type="hidden" name="id" value="<?php echo $id; ?>" >
                         <div>
-                            <label>Username</label>
+                            <label>Uživatelské jméno</label>
                             <input type="text" name="username" value="<?php echo $username; ?>" class="text-input">
                         </div>
                         <div>
@@ -146,11 +145,11 @@ if(isset($_POST['update-user'])) // when click on Update button
                             <input type="email" name="email" value="<?php echo $email; ?>" class="text-input">
                         </div>
                         <div>
-                            <label>Password</label>
+                            <label>Heslo</label>
                             <input type="password" name="password" value="<?php echo $password; ?>" class="text-input">
                         </div>
                         <div>
-                            <label>Password Confirmation</label>
+                            <label>Heslo znovu</label>
                             <input type="password" name="passwordConf" value="<?php echo $passwordConf; ?>" class="text-input">
                         </div>
                         <div>
@@ -164,13 +163,13 @@ if(isset($_POST['update-user'])) // when click on Update button
 							  <input type="radio" name="role" value="recenzent" <?php if ($role=='recenzent'){echo 'checked';}?> >
 							  <label>recenzent</label><br>
 							  <input type="radio" name="role" value="ctenar" <?php if ($role=='ctenar'){echo 'checked';}?> >
-							  <label>ctenar</label><br>
+							  <label>čtenář</label><br>
 							  <input type="radio" name="role" value="sefredaktor" <?php if ($role=='sefredaktor'){echo 'checked';}?> >
-							  <label>sefredaktor</label><br><br>
+							  <label>šéfredaktor</label><br><br>
                         </div>
 
                         <div>
-                            <button type="submit" name="update-user" class="btn btn-big">Update User</button>
+                            <button type="submit" name="update-user" class="btn btn-big">Upravit uživatele</button>
                         </div>
                     </form>
 

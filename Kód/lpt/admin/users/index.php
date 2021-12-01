@@ -6,7 +6,7 @@ if($_SESSION['role']=='admin') {
 ?>
 <?php
 
-// initializing variables
+
 $errors = array();
 
 if (isset($_GET['delete_id'])) {
@@ -17,10 +17,10 @@ if (isset($_GET['delete_id'])) {
 	
 	if($result != null)
 	{
-		mysqli_close($conn); // Close connection
-		$_SESSION['message'] = 'Admin user deleted';
+		mysqli_close($conn);
+		$_SESSION['message'] = 'Uživatel byl smazán';
 		$_SESSION['type'] = 'success';
-		header('location: ' . BASE_URL . '/admin/users/index.php');  // redirects to all records page
+		header('location: ' . BASE_URL . '/admin/users/index.php');
 		exit;
 	}
 	else
@@ -52,7 +52,7 @@ if (isset($_GET['delete_id'])) {
         <!-- Admin Styling -->
         <link rel="stylesheet" href="../../assets/css/admin.css">
 
-        <title>Admin Section - Manage Users</title>
+        <title>Admin - Spravovat uživatele</title>
     </head>
 
     <body>
@@ -68,20 +68,20 @@ if (isset($_GET['delete_id'])) {
             <!-- Admin Content -->
             <div class="admin-content">
                 <div class="button-group">
-                    <a href="create.php" class="btn btn-big">Add User</a>
-                    <a href="index.php" class="btn btn-big">Manage Users</a>
+                    <a href="create.php" class="btn btn-big">Přidat uživatele</a>
+                    <a href="index.php" class="btn btn-big">Spravovat uživatele</a>
                 </div>
                 <div class="content">
-                    <h2 class="page-title">Manage Users</h2>
+                    <h2 class="page-title">Spravovat uživatele</h2>
 
                     <?php include(ROOT_PATH . "/app/includes/messages.php"); ?>
 
                     <table>
                         <thead>
-                            <th>SN</th>
-                            <th>Username</th>
+                            <th>SČ</th>
+                            <th>Uživatelské jméno</th>
                             <th>Email</th>
-                            <th colspan="2">Action</th>
+                            <th colspan="2">Akce</th>
                         </thead>
                         <tbody>
 							<?php
@@ -94,8 +94,8 @@ if (isset($_GET['delete_id'])) {
                                     <td><?php echo $key++; ?></td>
                                     <td><?php echo $user['username']; ?></td>
                                     <td><?php echo $user['email']; ?></td>
-                                    <td><a href="edit.php?id=<?php echo $user['id']; ?>" class="edit">edit</a></td>
-                                    <td><a href="index.php?delete_id=<?php echo $user['id']; ?>" class="delete">delete</a></td>
+                                    <td><a href="edit.php?id=<?php echo $user['id']; ?>" class="edit">upravit</a></td>
+                                    <td><a href="index.php?delete_id=<?php echo $user['id']; ?>" class="delete">odstranit</a></td>
                                 </tr>
                             <?php } ?>
                         </tbody>
