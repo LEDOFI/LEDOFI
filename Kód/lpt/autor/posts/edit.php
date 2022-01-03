@@ -104,10 +104,10 @@ if(isset($_POST['update-post']))
 		if ($result) {
 		   $_POST['document'] = $document_name;
 		} else {
-			array_push($errors, "Failed to upload document");
+			array_push($errors, "Chyba při nahrávání dokumentu");
 		}
 	} else {
-	   array_push($errors, "Post document required");
+	   array_push($errors, "Dokument je vyžadován");
 	}
 
 
@@ -245,14 +245,14 @@ if(isset($_POST['update-post']))
 	                    </div>
                         <div>
                             <label>Dokument:</label>
-                            <input type="file" name="document" class="text-input" accept=".doc,.docx" required>
+                            <input type="file" name="document" class="text-input" accept=".doc,.docx,.pdf" required>
                         </div>
                         <div>
                             <label>Obrázek:</label>
                             <input type="file" name="image" class="text-input" accept=".gif,.jpg,.jpeg,.png" required>
                         </div>
                         <div>
-                            <button type="submit" name="update-post" class="btn btn-big">Update Post</button>
+                            <button type="submit" name="update-post" class="btn btn-big">Upravit článek</button>
                         </div>
                     </form>
 
