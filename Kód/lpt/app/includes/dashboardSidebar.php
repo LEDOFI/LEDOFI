@@ -5,9 +5,9 @@ if($_SESSION['role']=='admin') {
 	<div class="left-sidebar">
 		<ul>
 			<li><a href="<?php echo BASE_URL . '/admin/dashboard.php'; ?>">Nedávná aktivita</a></li>
-			<li><a href="<?php echo BASE_URL . '/admin/posts/index.php'; ?>">Spravovat články</a></li>
 			<li><a href="<?php echo BASE_URL . '/admin/users/index.php'; ?>">Spravovat uživatele</a></li>
 			<li><a href="<?php echo BASE_URL . '/admin/zadosti/index.php'; ?>">Žádosti o změnu role</a></li>
+			<li><a href="<?php echo BASE_URL . '/admin/export/index.php'; ?>">Export/Záloha databáze</a></li>
 		</ul>
 	</div>
 
@@ -53,6 +53,21 @@ if($_SESSION['role']=='redaktor') {
             <li><a href="<?php echo BASE_URL . '/redaktor/posts/index.php'; ?>">Předložené články</a></li>
     		<li><a href="<?php echo BASE_URL . '/redaktor/posts/index2.php'; ?>">Předložené recenze<br>(jednotlivé)</a></li>
     		<li><a href="<?php echo BASE_URL . '/redaktor/posts/index3.php'; ?>">Předložené recenze<br>(seskupené)</a></li>
+        </ul>
+    </div>
+
+<?php	
+}
+
+if($_SESSION['role']=='sefredaktor') {
+?>
+	
+    <div class="left-sidebar">
+        <ul>
+            <li><a href="<?php echo BASE_URL . '/sefredaktor/dashboard.php'; ?>">Nedávná aktivita</a></li>
+            <li><a href="<?php echo BASE_URL . '/sefredaktor/posts/index.php'; ?>">Předložené články</a></li>
+    		<li><a href="<?php echo BASE_URL . '/sefredaktor/posts/index2.php'; ?>">Předložené recenze<br>(jednotlivé)</a></li>
+    		<li><a href="<?php echo BASE_URL . '/sefredaktor/posts/index3.php'; ?>">Předložené recenze<br>(seskupené)</a></li>
         </ul>
     </div>
 
