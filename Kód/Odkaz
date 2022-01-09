@@ -1,1 +1,11 @@
+Odkaz na webovou stránku projektu:
 https://ledofi.000webhostapp.com/index.php
+
+Přísupové údaje k testovacím účtům:
+Uživatelské jméno	  Heslo	        Role
+autor	              autor	        Autor článků
+recenzent	          recenzent	    Recenzent článků
+recenzent2	        Recenzent2	  Recenzent článků
+redaktor	          redaktor	    Redaktor časopisu
+sefredaktor	        sefredaktor	  Šéfredaktor časopisu
+admin	              admin	        Administrátor časopisu
